@@ -1,0 +1,228 @@
+# =============================================================================
+# Finance Engine — the single home for every tunable parameter.
+#
+# Logic modules read their parameters from here; nothing tunable is hardcoded
+# in .py files. Relative paths are resolved against the project root (the
+# folder that contains the finance_engine/ package).
+#
+# Defaults are set for the Indian market (NSE). Use tickers with the .NS suffix.
+# =============================================================================
+
+data:
+  # Where OHLCV bars come from: "yfinance" or "csv".
+  source: yfinance
+
+  # 10 years gives ~2,450 daily bars: 2 years to train on first, then ~8 years of
+  # out-of-sample forecasts to validate against. Below the minimum we refuse to run.
+  history_years: 10
+  min_history_years: 3
+
+  # Adjusted daily prices sometimes violate low <= open/close <= high by tiny
+  # rounding amounts. Violations up to this fraction of price are clipped (and
+  # logged); anything larger is treated as corrupt data and raises an error.
+  ohlc_repair_tolerance: 0.005
+
+  # Yahoo inserts fake bars on some NSE holidays: open = high = low = close and
+  # zero volume. They add artificial 0% return days, which understate volatility
+  # and fat tails, so they are removed. (Indices report zero volume on real days
+  # too, which is why the rule also requires a completely flat bar.)
+  drop_holiday_placeholder_bars: true
+
+  cache:
+    directory: cache/ohlcv
+    # Cached data older than this is refetched in full (not appended to), because
+    # adjusted prices are rewritten backwards whenever a dividend or split occurs.
+    max_age_hours: 12
+
+  yfinance:
+    interval: 1d
+    # true  = OHLC adjusted for splits and dividends, so returns stay continuous
+    #         across corporate actions (what indicators and backtests need).
+    auto_adjust: true
+    # A bar dated "today" (exchange-local) is still forming during market hours;
+    # using it would feed partial data into indicators.
+    drop_todays_bar: true
+
+  csv:
+    # Expects {directory}/{TICKER}.csv with columns Date,Open,High,Low,Close,Volume.
+    directory: user_data/csv
+
+market:
+  exchange_timezone: Asia/Kolkata
+  # Results announced at or after the close move the price on the next session.
+  market_close_time: "15:30"
+  # NSE trades ~246-249 sessions a year (measured from 2022-2025 data).
+  trading_days_per_year: 248
+  benchmark_index: ^NSEI
+  # Yahoo only carries history for these NSE sector indices; other sectors fall
+  # back to the Nifty 50 for relative-strength context.
+  sector_indices:
+    Technology: ^CNXIT
+    Financial Services: ^NSEBANK
+    Healthcare: ^CNXPHARMA
+  # Annual risk-free rate for Sharpe ratios and for idle cash in the strategy
+  # check. Approximates the 91-day Indian T-bill yield — update it periodically.
+  risk_free_rate_annual: 0.065
+  # Round-trip cost of a delivery trade (buy + sell) as a fraction of value:
+  # STT 0.1% on each side, plus exchange, SEBI, GST, stamp duty and brokerage.
+  round_trip_cost: 0.0025
+  # Daily price band (circuit limit) per ticker, as a fraction, e.g. 0.10 for a
+  # 10% band. Stocks in the F&O segment have no fixed band — leave them out.
+  # Simulated daily moves are capped at the band, as the exchange would.
+  price_bands: {}
+
+forecast:
+  # How far ahead the distribution is forecast, in trading days.
+  horizon_days: 5
+  # Monte Carlo paths per forecast. With 10,000 paths the sampling error of a
+  # 5%/95% quantile is ~1-2% of the interval width — negligible next to model error.
+  monte_carlo_paths: 10000
+  random_seed: 42
+  # Central probability intervals reported and checked for calibration.
+  interval_levels: [0.5, 0.68, 0.8, 0.9, 0.95]
+  # Report P(move > +x) and P(move < -x) for these sizes.
+  move_thresholds: [0.02, 0.05]
+
+walk_forward:
+  # First forecast is made only after this many bars of training history.
+  min_training_days: 504
+  # null = expanding window (use all history before each forecast). A number
+  # caps the window, which adapts faster but estimates drift less precisely.
+  max_training_days: null
+  # Forecast every `horizon_days` so outcome windows don't overlap: overlapping
+  # 5-day outcomes are correlated, which would make significance tests overconfident.
+  forecast_every_days: 5
+  # Model parameters are re-estimated this often; between refits the fitted
+  # model is still updated with each new day's data (filtering), never future data.
+  refit_every_days: 21
+  # The engine picks its volatility model by past out-of-sample CRPS, using only
+  # forecasts whose outcomes were already known. Until this many exist, it uses the default.
+  min_scored_forecasts_for_model_selection: 20
+  default_volatility_model: garch_t
+
+indicators:
+  moving_average_spread: {fast_ema: 20, slow_sma: 50}
+  macd: {fast: 12, slow: 26, signal: 9}
+  directional_movement: {period: 14}
+  adx: {period: 14}
+  rsi: {period: 14}
+  stochastic: {period: 14, smoothing: 3}
+  cci: {period: 20}
+  bollinger: {period: 20, width_in_std: 2.0}
+  atr: {period: 14}
+  realized_volatility: {window: 21}
+  obv: {slope_window: 20}
+  vwap: {window: 20}
+  chaikin_money_flow: {period: 20}
+
+normalization:
+  # Window (bars) for the trailing statistics used to rescale indicators.
+  # Trailing only — each value is scaled by its own past, never the future.
+  scale_window: 252
+  percentile_window: 252
+  # CCI is conventionally read at ±100; tanh(CCI/100) maps ±100 to ±0.76.
+  cci_scale: 100.0
+
+redundancy:
+  # If two normalized indicators correlate above this (training data only), the
+  # later one in `priority` is dropped so the signal isn't double-counted.
+  max_abs_correlation: 0.8
+  priority: [moving_average_spread, macd, directional_movement, rsi, cci, stochastic,
+             bollinger_position, obv_slope, vwap_distance, chaikin_money_flow,
+             realized_volatility, atr_percent, bollinger_bandwidth]
+
+regimes:
+  # ADX above this = trending market, below = ranging (Wilder's convention).
+  trend_adx_threshold: 25
+
+models:
+  garch:
+    # GJR-GARCH: lets negative shocks raise volatility more than positive ones
+    # (the leverage effect), which equity data almost always shows.
+    asymmetric: true
+    max_iterations: 3000
+  merton:
+    # Truncation of the Poisson sum in the likelihood. P(>8 jumps in a day) is negligible.
+    max_jumps_per_day: 8
+    # Moves beyond this many standard deviations seed the jump estimate.
+    initial_jump_threshold_sd: 3.0
+    max_iterations: 3000
+  hmm:
+    # Two states (calm / turbulent). Five-to-ten years of daily returns rarely
+    # supports more without the extra states fitting noise.
+    states: 2
+    max_iterations: 300
+    tolerance: 1.0e-7
+    random_restarts: 4
+  kalman:
+    max_iterations: 800
+  mean_reversion:
+    # ADF significance level (0.01, 0.05 or 0.10). OU is used only if rejected.
+    adf_significance: 0.05
+  earnings:
+    # Earnings-day variance multiplier is estimated only with at least this many past events.
+    min_events: 8
+
+bayes:
+  # Prior on the long-run expected log return before seeing this stock's data.
+  # ~10%/year is roughly the long-run nominal return of Indian large caps;
+  # the wide standard deviation lets the stock's own history dominate.
+  prior_annual_drift: 0.10
+  prior_annual_drift_sd: 0.20
+  # Prior standard deviation of each signal's effect on the h-day return, per
+  # one standard deviation of the signal. 0.25% on a ~4% 5-day std means a
+  # signal is allowed to explain ~0.4% of variance before data argues for more —
+  # an honest ceiling for technical signals, and a guard against overfitting.
+  signal_effect_prior_sd: 0.0025
+
+fundamentals:
+  cache_max_age_hours: 24
+  # Largest drift tilt a maximally cheap/expensive rating can add, per year.
+  # Value premia are a few %/year; over 5 days this is deliberately tiny.
+  max_annual_tilt: 0.03
+  component_weights:
+    valuation_vs_history: 0.3
+    valuation_vs_peers: 0.3
+    growth: 0.2
+    earnings_surprise: 0.2
+  # |bias| below this = "fairly valued".
+  fair_value_band: 0.2
+  # Scales mapping raw fundamentals to [-1, +1] via tanh(value / scale).
+  growth_scale: 0.15
+  surprise_scale_pct: 5.0
+  peer_log_ratio_scale: 0.5
+  # Multiples outside these ranges are treated as data errors and excluded (and named
+  # in the report). Yahoo reports EV/EBITDA of ~900-1200 for some dual-listed Indian IT
+  # stocks — rupee enterprise value divided by dollar EBITDA (the error is ~88x = USD/INR).
+  plausible_multiple_max:
+    trailingPE: 200
+    priceToBook: 50
+    enterpriseToEbitda: 100
+  # Peers for valuation comparison (Yahoo has no peer lists). Edit freely.
+  peers:
+    TCS.NS: [INFY.NS, HCLTECH.NS, WIPRO.NS, TECHM.NS]
+    INFY.NS: [TCS.NS, HCLTECH.NS, WIPRO.NS, TECHM.NS]
+    HCLTECH.NS: [TCS.NS, INFY.NS, WIPRO.NS, TECHM.NS]
+    WIPRO.NS: [TCS.NS, INFY.NS, HCLTECH.NS, TECHM.NS]
+    HDFCBANK.NS: [ICICIBANK.NS, KOTAKBANK.NS, AXISBANK.NS, SBIN.NS]
+    ICICIBANK.NS: [HDFCBANK.NS, KOTAKBANK.NS, AXISBANK.NS, SBIN.NS]
+    SBIN.NS: [BANKBARODA.NS, PNB.NS, CANBK.NS, HDFCBANK.NS]
+    RELIANCE.NS: [ONGC.NS, IOC.NS, BPCL.NS]
+    SUNPHARMA.NS: [DRREDDY.NS, CIPLA.NS, DIVISLAB.NS, LUPIN.NS]
+    MARUTI.NS: [TATAMOTORS.NS, M&M.NS, BAJAJ-AUTO.NS, EICHERMOT.NS]
+    HINDUNILVR.NS: [ITC.NS, NESTLEIND.NS, BRITANNIA.NS, DABUR.NS]
+
+evaluation:
+  significance_level: 0.05
+  reliability_bins: 10
+  pit_bins: 10
+
+strategy_check:
+  # A deliberately simple long-only rule used only as a reality check of the
+  # forecasts after Indian trading costs: hold the stock for the next h days when
+  # P(up) >= this threshold, otherwise sit in cash. (Delivery short-selling
+  # isn't available in the Indian cash market, so no short side.)
+  enter_probability: 0.55
+
+output:
+  directory: reports

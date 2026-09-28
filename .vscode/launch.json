@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Finance Engine: analyse ticker",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "finance_engine.main",
+      "args": ["${input:ticker}"],
+      "cwd": "${workspaceFolder}",
+      "python": "${workspaceFolder}/.venv/bin/python",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Finance Engine: analyse ticker (refresh cache)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "finance_engine.main",
+      "args": ["${input:ticker}", "--refresh"],
+      "cwd": "${workspaceFolder}",
+      "python": "${workspaceFolder}/.venv/bin/python",
+      "console": "integratedTerminal"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "ticker",
+      "type": "promptString",
+      "description": "NSE ticker with .NS suffix (e.g. RELIANCE.NS, TCS.NS)",
+      "default": "RELIANCE.NS"
+    }
+  ]
+}

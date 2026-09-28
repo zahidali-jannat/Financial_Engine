@@ -1,0 +1,83 @@
+==============================================================================
+TCS.NS — Tata Consultancy Services Limited
+5-trading-day probabilistic forecast · data to 2026-09-25 · last close ₹2,082.00
+==============================================================================
+
+WHAT THE ENGINE EXPECTS  (next 5 trading days, to about 2026-10-02)
+  68% probability the price ends between ₹2,007.33 and ₹2,152.62
+  90% probability the price ends between ₹1,953.21 and ₹2,207.57
+  95% probability the price ends between ₹1,924.24 and ₹2,240.28
+  Middle outcome (median): ₹2,078.60 (-0.2%)
+  Chance it ends higher than today: 48%  ← no proven directional edge; treat as close to a coin flip
+  Chance of a  rise > 2%: 27% · fall > 2%: 30% · rise > 5%: 8% · fall > 5%: 9%
+
+HOW MUCH TO TRUST THIS  (392 past forecasts it had never seen, 2018-10-10 to 2026-09-11)
+  [PASS] Calibrated probabilities: when it said 90%, the outcome landed inside 91.3% of the time; 95% → 95.7%; 50% → 51.8% (uniformity test p = 0.093).
+  [FAIL] Range of outcomes vs the GBM baseline: CRPS +0.7% (p = 0.212, not distinguishable from noise).
+  [FAIL] Direction: up/down probabilities were no better than GBM's (Brier -0.0%, p = 0.958). The engine has NO reliable directional edge on this stock.
+  [PASS] After Indian trading costs, holding only when P(up) ≥ 55%: +5.7%/yr (Sharpe 0.03, worst drawdown -25%) vs buy-and-hold +3.2%/yr (Sharpe -0.02, worst drawdown -51%).
+
+WHY — WHAT SHAPED THIS FORECAST
+  Width: GJR-GARCH-t + earnings days — best out-of-sample of 5 models (CRPS +0.8% vs GBM).
+    Volatility now 1.74%/day vs long-run 1.61% (above normal); shocks fade with a half-life of ~26 days.
+    Falls raise volatility more than rises (leverage γ = 0.029); tails are fat (Student-t ν = 4.2).
+  Regime: CALM (HMM P(turbulent) = 7%) and RANGING (ADX vs 25).
+  Earnings: no results reaction day expected inside the window.
+  Centre (expected 5-day return): prior +0.21% → after evidence -0.11% (± 0.48% uncertainty), from 458 past non-overlapping windows.
+    -0.196%  Kalman trend
+    +0.175%  long-run average (prior + history)
+    -0.061%  volatility state
+    -0.037%  trend indicators
+    +0.027%  trend signals (trending-regime weight)
+    -0.021%  volume / money flow
+    (For scale: a typical 5-day move is ±3.9%; these shifts are small by design — see the Bayesian prior in settings.)
+
+FUNDAMENTALS  (a small prior tilt only — free data can't be tested walk-forward)
+  Overall: UNDERVALUED (bias +0.38 on −1…+1, confidence medium) → drift tilt +0.51%/yr ≈ +0.010% over 5 days.
+  • Valuation vs own history [+0.94]: P/E 14.0 is at the 3% percentile of its 10-year range (12.8–37.2, median 23.3)
+  • Valuation vs peers [-0.15]: P/E 15.1 vs peer median 16.3; P/B 6.9 vs peer median 4.5; EV/EBITDA 10.0 vs peer median 11.2 (peers: INFY.NS, HCLTECH.NS, WIPRO.NS, TECHM.NS); excluded as implausible data: INFY.NS EV/EBITDA 903, HCLTECH.NS EV/EBITDA 1218
+  • Growth [+0.46]: revenue +5.8%/yr over 3 years; net income +5.3%/yr over 3 years; latest quarter revenue +12.1% year on year; net margin 19.0% → 18.5% over the last 5 quarters
+  • Earnings surprises [+0.25]: beat estimates in 67% of the last 12 quarters; median surprise +0.8%
+  P/E cross-check: rebuilt from reported EPS 14.0 vs Yahoo 15.1  ← mismatch: Yahoo's EPS feed may mix standalone/consolidated figures
+
+MARKET CONTEXT  (last 3 months)
+  Stock vs ^NSEI: +3.2%
+  Stock vs sector index ^CNXIT: -4.4%;  sector vs ^NSEI: +7.5%
+  Beta to ^NSEI (1 year): 0.82 (correlation 0.38)
+  Interest-rate sensitivity: not assessed — no reliable free Indian bond-yield series.
+
+MODEL CHECKS  (assumptions tested on this stock, not assumed)
+  GBM's normal returns: REJECTED — excess kurtosis 4.0, 14 moves beyond 4σ vs 0.16 expected.
+  Volatility clustering (ARCH-LM): present (p < 0.001) — the reason GARCH is used.
+  Mean reversion (ADF on log price): rejected the unit root in 0 of 79 refits → no mean reversion; OU not used.
+  Redundant indicators dropped (double-counting guard): rsi (ρ=0.95 with directional_movement), cci (ρ=0.83 with directional_movement), stochastic (ρ=0.86 with macd), bollinger_position (ρ=0.83 with directional_movement), vwap_distance (ρ=0.84 with directional_movement).
+
+  model                              CRPS vs GBM  p-value calibr. p  90% cover
+  GBM (baseline)                               —        —     0.020      91.6%
+  GJR-GARCH-t                              +0.7%    0.087     0.013      91.1%
+  GJR-GARCH-t + earnings days              +0.8%    0.085     0.006      91.8%
+  Merton jump-diffusion                    +0.2%    0.096     0.016      91.6%
+  HMM regime-switching                     +0.3%    0.334     0.031      91.1%
+  ENGINE                                   +0.7%    0.212     0.093      91.3%
+  (calibr. p < 0.05 = forecast probabilities are provably off; 90% cover should be ~90%)
+
+WHERE IT DOES WORST  (out of sample)
+  earnings in window           n=  32  skill vs GBM -5.3%  90% coverage 91%
+  turbulent regime (HMM)       n=  77  skill vs GBM -0.9%  90% coverage 91%
+  ranging (ADX)                n= 250  skill vs GBM +0.4%  90% coverage 91%
+  calm regime (HMM)            n= 315  skill vs GBM +1.1%  90% coverage 91%
+  trending (ADX)               n= 142  skill vs GBM +1.3%  90% coverage 92%
+  no earnings in window        n= 360  skill vs GBM +1.4%  90% coverage 91%
+  Worst calendar year: 2018 (skill -0.3%).
+  Outcomes outside the 95% interval: 4.3% (expected 5%). Biggest misses:
+    2020-03-09  actual -15.9%  (forecast percentile 0.0%)  — turbulent regime
+    2025-03-27  actual -9.6%  (forecast percentile 0.3%)
+    2020-09-30  actual +13.4%  (forecast percentile 99.6%)  — results in window
+    2019-10-23  actual +8.8%  (forecast percentile 99.3%)
+    2019-12-12  actual +10.3%  (forecast percentile 99.1%)  — turbulent regime
+
+NOTES
+  • A research tool, not investment advice. Probabilities describe the model's view given
+    past behaviour; markets can do things the past never showed (policy shocks, fraud, halts).
+  • Every trust statement above comes from walk-forward tests: each past forecast used only
+    data available on its date, and was scored on what happened next.

@@ -1,0 +1,86 @@
+==============================================================================
+HDFCBANK.NS — HDFC Bank Limited
+5-trading-day probabilistic forecast · data to 2026-09-25 · last close ₹735.60
+==============================================================================
+
+WHAT THE ENGINE EXPECTS  (next 5 trading days, to about 2026-10-02)
+  68% probability the price ends between ₹721.53 and ₹759.85
+  90% probability the price ends between ₹707.04 and ₹774.52
+  95% probability the price ends between ₹699.77 and ₹782.05
+  Middle outcome (median): ₹740.60 (+0.7%)
+  Chance it ends higher than today: 60%  ← no proven directional edge; treat as close to a coin flip
+  Chance of a  rise > 2%: 30% · fall > 2%: 15% · rise > 5%: 6% · fall > 5%: 2%
+
+HOW MUCH TO TRUST THIS  (392 past forecasts it had never seen, 2018-10-10 to 2026-09-11)
+  [PASS] Calibrated probabilities: when it said 90%, the outcome landed inside 89.0% of the time; 95% → 93.9%; 50% → 51.0% (uniformity test p = 0.924).
+  [PASS] Range of outcomes vs the GBM baseline: CRPS +1.8% (p = 0.031, statistically significant).
+  [FAIL] Direction: up/down probabilities were no better than GBM's (Brier +0.2%, p = 0.860). The engine has NO reliable directional edge on this stock.
+  [LUCK?] After Indian trading costs, holding only when P(up) ≥ 55%: +14.2%/yr (Sharpe 0.53, worst drawdown -24%) vs buy-and-hold +6.4%/yr (Sharpe 0.12, worst drawdown -40%).
+          The rule won on this one historical path, but the direction test above found no real skill —
+          so this outperformance is not evidence of an edge and may not repeat. Do not trade on it alone.
+  → Use it for RISK (how far the price may move, position sizing, stop distances), not for picking direction.
+
+WHY — WHAT SHAPED THIS FORECAST
+  Width: GJR-GARCH-t — best out-of-sample of 5 models (CRPS +1.6% vs GBM).
+    Volatility now 1.24%/day vs long-run 1.40% (below normal); shocks fade with a half-life of ~33 days.
+    Falls raise volatility more than rises (leverage γ = 0.048); tails are fat (Student-t ν = 4.8).
+  Regime: CALM (HMM P(turbulent) = 4%) and RANGING (ADX vs 25).
+  Earnings: no results reaction day expected inside the window.
+  Centre (expected 5-day return): prior +0.22% → after evidence +0.70% (± 0.28% uncertainty), from 458 past non-overlapping windows.
+    +0.634%  Kalman trend
+    +0.154%  long-run average (prior + history)
+    -0.130%  volatility state
+    +0.045%  volume / money flow
+    -0.004%  trend signals (trending-regime weight)
+    -0.004%  trend indicators
+    (For scale: a typical 5-day move is ±2.8%; these shifts are small by design — see the Bayesian prior in settings.)
+
+FUNDAMENTALS  (a small prior tilt only — free data can't be tested walk-forward)
+  Overall: UNDERVALUED (bias +0.52 on −1…+1, confidence medium) → drift tilt +0.88%/yr ≈ +0.018% over 5 days.
+  • Valuation vs own history [+0.91]: P/E 15.0 is at the 5% percentile of its 10-year range (11.6–30.2, median 21.3)
+  • Valuation vs peers [+0.03]: P/E 16.1 vs peer median 15.8; P/B 1.9 vs peer median 2.0 (peers: ICICIBANK.NS, KOTAKBANK.NS, AXISBANK.NS, SBIN.NS)
+  • Growth [+0.75]: revenue +16.9%/yr over 3 years; net income +12.5%/yr over 3 years; net margin 27.0% → 19.0% over the last 3 quarters
+  • Earnings surprises [+0.47]: beat estimates in 75% of the last 12 quarters; median surprise +2.4%
+  P/E cross-check: rebuilt from reported EPS 15.0 vs Yahoo 16.1  ← mismatch: Yahoo's EPS feed may mix standalone/consolidated figures
+
+MARKET CONTEXT  (last 3 months)
+  Stock vs ^NSEI: -4.6%
+  Stock vs sector index ^NSEBANK: -4.2%;  sector vs ^NSEI: -0.4%
+  Beta to ^NSEI (1 year): 1.25 (correlation 0.77)
+  Interest-rate sensitivity: not assessed — no reliable free Indian bond-yield series.
+
+MODEL CHECKS  (assumptions tested on this stock, not assumed)
+  GBM's normal returns: REJECTED — excess kurtosis 10.2, 15 moves beyond 4σ vs 0.16 expected.
+  Volatility clustering (ARCH-LM): present (p < 0.001) — the reason GARCH is used.
+  Mean reversion (ADF on log price): rejected the unit root in 0 of 79 refits → no mean reversion; OU not used.
+  Redundant indicators dropped (double-counting guard): rsi (ρ=0.95 with directional_movement), cci (ρ=0.84 with directional_movement), stochastic (ρ=0.82 with macd), bollinger_position (ρ=0.83 with directional_movement), vwap_distance (ρ=0.85 with directional_movement), atr_percent (ρ=0.81 with realized_volatility).
+
+  model                              CRPS vs GBM  p-value calibr. p  90% cover
+  GBM (baseline)                               —        —     0.257      90.1%
+  GJR-GARCH-t                              +1.6%    0.075     0.421      88.3%
+  GJR-GARCH-t + earnings days              +1.5%    0.097     0.338      89.0%
+  Merton jump-diffusion                    +0.4%    0.072     0.775      89.5%
+  HMM regime-switching                     +0.5%    0.439     0.543      87.0%
+  ENGINE                                   +1.8%    0.031     0.924      89.0%
+  (calibr. p < 0.05 = forecast probabilities are provably off; 90% cover should be ~90%)
+
+WHERE IT DOES WORST  (out of sample)
+  earnings in window           n=  32  skill vs GBM -1.9%  90% coverage 88%
+  turbulent regime (HMM)       n=  70  skill vs GBM +0.3%  90% coverage 90%
+  trending (ADX)               n= 150  skill vs GBM +1.7%  90% coverage 92%
+  ranging (ADX)                n= 242  skill vs GBM +1.9%  90% coverage 87%
+  no earnings in window        n= 360  skill vs GBM +2.2%  90% coverage 89%
+  calm regime (HMM)            n= 322  skill vs GBM +2.3%  90% coverage 89%
+  Worst calendar year: 2018 (skill -4.3%).
+  Outcomes outside the 95% interval: 6.1% (expected 5%). Biggest misses:
+    2020-03-17  actual -21.3%  (forecast percentile 0.0%)  — turbulent regime
+    2020-03-09  actual -11.9%  (forecast percentile 0.0%)  — turbulent regime
+    2024-01-15  actual -14.7%  (forecast percentile 0.0%)  — results in window
+    2022-09-21  actual -8.5%  (forecast percentile 0.1%)
+    2023-09-15  actual -7.9%  (forecast percentile 0.2%)
+
+NOTES
+  • A research tool, not investment advice. Probabilities describe the model's view given
+    past behaviour; markets can do things the past never showed (policy shocks, fraud, halts).
+  • Every trust statement above comes from walk-forward tests: each past forecast used only
+    data available on its date, and was scored on what happened next.

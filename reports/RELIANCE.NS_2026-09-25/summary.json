@@ -1,0 +1,159 @@
+{
+  "ticker": "RELIANCE.NS",
+  "as_of": "2026-09-25",
+  "last_close": 1226.0,
+  "horizon_trading_days": 5,
+  "price_intervals": {
+    "0.5": [
+      1210.0054413295156,
+      1260.095230179727
+    ],
+    "0.68": [
+      1197.267745512487,
+      1273.155411490029
+    ],
+    "0.8": [
+      1185.2959251512477,
+      1284.7861163203097
+    ],
+    "0.9": [
+      1168.7279458742796,
+      1300.8468445962303
+    ],
+    "0.95": [
+      1152.7944931586371,
+      1315.8071061510886
+    ]
+  },
+  "median_price": 1234.9141737558598,
+  "probability_up": 0.5933,
+  "volatility_model": "garch_t_earnings",
+  "drift_posterior": {
+    "mean": 0.007162011127961115,
+    "std": 0.004938226771075134,
+    "contributions": {
+      "baseline": 0.002871110193360433,
+      "trend": -0.000424673835695353,
+      "volatility": 0.00119000095988021,
+      "volume": 0.0008972985453343772,
+      "kalman_trend": 0.0033346430336915296,
+      "trend_when_trending": -0.0007063677686100824
+    }
+  },
+  "fair_value": {
+    "label": "fairly valued",
+    "bias": -0.17147697529511846,
+    "confidence": 0.2467558882903429
+  },
+  "verdicts": {
+    "forecasts_tested": 392,
+    "calibrated": true,
+    "pit_ks_p_value": 0.7495860860834266,
+    "distribution_edge_over_gbm": true,
+    "crps_skill_vs_gbm": 0.02534512405417988,
+    "crps_p_value": 0.0016125456307720665,
+    "directional_edge_over_gbm": false,
+    "brier_skill_vs_gbm": 0.0027153306698430857,
+    "brier_p_value": 0.7451013586151951,
+    "rule_beats_buy_and_hold": true
+  },
+  "coverage": {
+    "0.5": 0.4846938775510204,
+    "0.68": 0.7168367346938775,
+    "0.8": 0.826530612244898,
+    "0.9": 0.9056122448979592,
+    "0.95": 0.9438775510204082
+  },
+  "model_comparison": {
+    "gbm": {
+      "forecasts": 392,
+      "mean_crps": 0.0205193926,
+      "crps_skill_vs_gbm": 0.0,
+      "crps_dm_p_value": null,
+      "pit_ks_p_value": 0.0008196943,
+      "brier": 0.2500659937,
+      "brier_skill_vs_gbm": 0.0,
+      "brier_dm_p_value": null,
+      "coverage_0.5": 0.612244898,
+      "coverage_0.68": 0.7831632653,
+      "coverage_0.8": 0.8596938776,
+      "coverage_0.9": 0.9285714286,
+      "coverage_0.95": 0.9515306122
+    },
+    "garch_t": {
+      "forecasts": 392,
+      "mean_crps": 0.0201054802,
+      "crps_skill_vs_gbm": 0.0201717647,
+      "crps_dm_p_value": 0.0011694302,
+      "pit_ks_p_value": 0.1333643193,
+      "brier": 0.2507909585,
+      "brier_skill_vs_gbm": -0.002899094,
+      "brier_dm_p_value": 0.499483954,
+      "coverage_0.5": 0.5,
+      "coverage_0.68": 0.7066326531,
+      "coverage_0.8": 0.8112244898,
+      "coverage_0.9": 0.9081632653,
+      "coverage_0.95": 0.9362244898
+    },
+    "garch_t_earnings": {
+      "forecasts": 392,
+      "mean_crps": 0.020090157,
+      "crps_skill_vs_gbm": 0.0209185343,
+      "crps_dm_p_value": 0.0007595213,
+      "pit_ks_p_value": 0.1566095325,
+      "brier": 0.2508067218,
+      "brier_skill_vs_gbm": -0.0029621302,
+      "brier_dm_p_value": 0.4831922329,
+      "coverage_0.5": 0.5076530612,
+      "coverage_0.68": 0.7091836735,
+      "coverage_0.8": 0.8265306122,
+      "coverage_0.9": 0.9158163265,
+      "coverage_0.95": 0.9540816327
+    },
+    "merton_jump": {
+      "forecasts": 392,
+      "mean_crps": 0.0203200021,
+      "crps_skill_vs_gbm": 0.0097171725,
+      "crps_dm_p_value": 1.6548e-06,
+      "pit_ks_p_value": 0.0310485446,
+      "brier": 0.2496426118,
+      "brier_skill_vs_gbm": 0.0016930808,
+      "brier_dm_p_value": 0.249919498,
+      "coverage_0.5": 0.5739795918,
+      "coverage_0.68": 0.7525510204,
+      "coverage_0.8": 0.8443877551,
+      "coverage_0.9": 0.9183673469,
+      "coverage_0.95": 0.9540816327
+    },
+    "regime_switching": {
+      "forecasts": 392,
+      "mean_crps": 0.0203136428,
+      "crps_skill_vs_gbm": 0.0100270894,
+      "crps_dm_p_value": 0.02529252,
+      "pit_ks_p_value": 0.262227067,
+      "brier": 0.2500399643,
+      "brier_skill_vs_gbm": 0.0001040903,
+      "brier_dm_p_value": 0.9568537903,
+      "coverage_0.5": 0.5204081633,
+      "coverage_0.68": 0.7219387755,
+      "coverage_0.8": 0.8112244898,
+      "coverage_0.9": 0.8954081633,
+      "coverage_0.95": 0.9515306122
+    },
+    "engine": {
+      "forecasts": 392,
+      "mean_crps": 0.0199993261,
+      "crps_skill_vs_gbm": 0.0253451241,
+      "crps_dm_p_value": 0.0016125456,
+      "pit_ks_p_value": 0.7495860861,
+      "brier": 0.2493869819,
+      "brier_skill_vs_gbm": 0.0027153307,
+      "brier_dm_p_value": 0.7451013586,
+      "coverage_0.5": 0.4846938776,
+      "coverage_0.68": 0.7168367347,
+      "coverage_0.8": 0.8265306122,
+      "coverage_0.9": 0.9056122449,
+      "coverage_0.95": 0.943877551
+    }
+  }
+}

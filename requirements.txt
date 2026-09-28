@@ -1,0 +1,9 @@
+pandas>=3.0
+numpy>=2.0
+yfinance>=1.0
+PyYAML>=6.0
+pytest>=8.0
+# Optional: independent referees for tests/test_cross_check_libraries.py (the engine doesn't need them)
+scipy>=1.12
+statsmodels>=0.14
+arch>=7.0
